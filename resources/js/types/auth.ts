@@ -1,14 +1,21 @@
+import type { ActiveSessionSummary } from './game-session';
+
 export type User = {
     id: number;
     name: string;
-    email: string;
-    avatar?: string;
-    email_verified_at: string | null;
+    username: string;
+    is_admin: boolean;
+    total_xp: number;
     created_at: string;
     updated_at: string;
-    [key: string]: unknown; // This allows for additional properties...
 };
 
 export type Auth = {
-    user: User;
+    user: User | null;
+};
+
+export type SharedData = {
+    name: string;
+    auth: Auth;
+    activeSession: ActiveSessionSummary | null;
 };

@@ -1,0 +1,25 @@
+<?php
+
+namespace App\Http\Requests\Admin;
+
+use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
+
+class StoreLevelRequest extends FormRequest
+{
+    public function authorize(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function rules(): array
+    {
+        return [
+            'name' => ['required', 'string', 'max:255', Rule::unique('levels', 'name')],
+            'min_xp' => ['required', 'integer', 'min:0', 'max:999999', Rule::unique('levels', 'min_xp')],
+        ];
+    }
+}

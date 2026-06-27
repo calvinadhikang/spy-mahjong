@@ -41,6 +41,9 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user(),
             ],
+            'activeSession' => fn () => $request->user()
+                ?->activeGameSession()
+                ?->toActiveSummary(),
         ];
     }
 }
