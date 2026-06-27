@@ -3,6 +3,10 @@ import { Head, Link, usePage } from '@inertiajs/react';
 import { MobileLayout } from '@/components/layouts/mobile-layout';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { useActiveSessionBlock } from '@/hooks/use-active-session-block';
+import {
+    isActiveGameSessionStatus,
+    useSessionSync,
+} from '@/hooks/use-session-sync';
 import type { GameSession, SharedData } from '@/types';
 
 type DashboardProps = {
@@ -12,6 +16,13 @@ type DashboardProps = {
 export default function Dashboard({ activeSession }: DashboardProps) {
     const { auth } = usePage<SharedData>().props;
     const { modal } = useActiveSessionBlock();
+
+    useSessionSync({
+        shouldSync:
+            activeSession !== null &&
+            isActiveGameSessionStatus(activeSession.status),
+        only: ['activeSession'],
+    });
 
     return (
         <>

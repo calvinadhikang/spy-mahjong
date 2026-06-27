@@ -6,6 +6,10 @@ import { SessionMoneySettlement } from '@/components/sessions/session-money-sett
 import { Button } from '@/components/ui/button';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { useActiveSessionBlock } from '@/hooks/use-active-session-block';
+import {
+    isActiveGameSessionStatus,
+    useSessionSync,
+} from '@/hooks/use-session-sync';
 import type { GameSession, SearchUser, SharedData } from '@/types';
 
 type ShowSessionProps = {
@@ -23,6 +27,12 @@ export default function ShowSession({
     const { post, processing } = useForm({});
     const { errors } = usePage<{ errors: Record<string, string> }>().props;
     const { auth } = usePage<SharedData>().props;
+
+    useSessionSync({
+        shouldSync: isActiveGameSessionStatus(session.status),
+        only: ['session'],
+        paused: processing,
+    });
 
     const addPlayer = (player: SearchUser) => {
         router.post(`/sessions/${session.id}/players`, {
