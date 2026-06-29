@@ -1,14 +1,14 @@
 <?php
 
-namespace App\Http\Requests\GameSessions;
+namespace App\Http\Requests\Admin;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreGameSessionRequest extends FormRequest
+class AdminLoginRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->is_admin === true;
+        return true;
     }
 
     /**
@@ -17,7 +17,7 @@ class StoreGameSessionRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:255'],
+            'password' => ['required', 'string'],
         ];
     }
 
@@ -27,7 +27,7 @@ class StoreGameSessionRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'name.required' => 'Please enter a session name.',
+            'password.required' => 'Please enter the admin password.',
         ];
     }
 }

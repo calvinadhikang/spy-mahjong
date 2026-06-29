@@ -8,4 +8,30 @@
         'Instrument Sans', ui-sans-serif, system-ui, sans-serif,
         'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
         'Noto Color Emoji';
+
+    --animate-modal-backdrop-in: modal-backdrop-in 180ms ease-out both;
+    --animate-modal-panel-in: modal-panel-in 220ms cubic-bezier(0.16, 1, 0.3, 1)
+        both;
+
+    @keyframes modal-backdrop-in {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+
+    @keyframes modal-panel-in {
+        from {
+            opacity: 0;
+            transform: translateY(12px) scale(0.97);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
 }

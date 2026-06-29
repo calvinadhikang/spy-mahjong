@@ -21,7 +21,6 @@ class RegisterTest extends TestCase
     public function test_new_users_can_register(): void
     {
         $response = $this->post(route('register'), [
-            'name' => 'New Player',
             'username' => 'newplayer',
             'password' => 'password',
             'password_confirmation' => 'password',
@@ -32,7 +31,7 @@ class RegisterTest extends TestCase
         $user = User::query()->where('username', 'newplayer')->first();
 
         $this->assertNotNull($user);
-        $this->assertSame('New Player', $user->name);
+        $this->assertSame('newplayer', $user->username);
 
         $identity = $user->identities()->first();
 
@@ -49,7 +48,6 @@ class RegisterTest extends TestCase
         ]);
 
         $response = $this->post(route('register'), [
-            'name' => 'Another Player',
             'username' => 'taken',
             'password' => 'password',
             'password_confirmation' => 'password',

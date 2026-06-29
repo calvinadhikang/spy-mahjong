@@ -102,10 +102,7 @@ function PlayerMoneyForm({ sessionId, player, error }: PlayerMoneyFormProps) {
         <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
             <div className="mb-3 flex items-start justify-between gap-3">
                 <div>
-                    <p className="font-medium text-white">{player.name}</p>
-                    <p className="text-sm text-emerald-100/60">
-                        @{player.username}
-                    </p>
+                    <p className="font-medium text-white">{player.username}</p>
                 </div>
                 {player.has_submitted_money ? (
                     <span className="rounded-full bg-emerald-400/15 px-2.5 py-1 text-xs font-semibold text-emerald-200">

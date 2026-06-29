@@ -27,7 +27,6 @@ class RegisterRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:255'],
             'username' => ['required', 'string', 'min:3', 'max:30', 'regex:/^[a-z0-9_]+$/', 'unique:users,username'],
             'password' => ['required', 'confirmed', Password::defaults()],
         ];
@@ -39,7 +38,6 @@ class RegisterRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'name.required' => 'Please enter your name.',
             'username.required' => 'Please choose a username.',
             'username.regex' => 'Username may only contain lowercase letters, numbers, and underscores.',
             'username.unique' => 'That username is already taken.',

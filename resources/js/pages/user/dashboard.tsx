@@ -32,7 +32,7 @@ export default function Dashboard({ activeSession }: DashboardProps) {
                 title="My table"
                 subtitle={
                     auth.user
-                        ? `Hi, ${auth.user.name}.`
+                        ? `Hi, ${auth.user.username}.`
                         : 'Log in to manage your game sessions.'
                 }
             >
@@ -74,7 +74,7 @@ export default function Dashboard({ activeSession }: DashboardProps) {
                                     : 's'}{' '}
                                 · Room master{' '}
                                 <span className="font-medium text-white">
-                                    {activeSession.room_master.name}
+                                    {activeSession.room_master.username}
                                 </span>
                             </p>
 
@@ -91,17 +91,21 @@ export default function Dashboard({ activeSession }: DashboardProps) {
                         <div className="rounded-2xl border border-dashed border-white/15 bg-white/5 p-6 text-center">
                             <p className="text-4xl">🀄</p>
                             <p className="mt-4 text-base text-emerald-100/70">
-                                You are not in a session yet. Create one and
-                                invite players to the table.
+                                You are not in a session yet.
+                                {auth.user.is_admin
+                                    ? ' Create one and invite players to the table.'
+                                    : ' Ask an admin to create a session for you.'}
                             </p>
                         </div>
 
-                        <Link
-                            href="/sessions/create"
-                            className="inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-emerald-500 px-5 text-base font-semibold text-white shadow-lg shadow-emerald-950/30 transition hover:bg-emerald-400 active:scale-[0.98]"
-                        >
-                            Create session
-                        </Link>
+                        {auth.user.is_admin ? (
+                            <Link
+                                href="/sessions/create"
+                                className="inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-emerald-500 px-5 text-base font-semibold text-white shadow-lg shadow-emerald-950/30 transition hover:bg-emerald-400 active:scale-[0.98]"
+                            >
+                                Create session
+                            </Link>
+                        ) : null}
                     </div>
                 )}
             </MobileLayout>

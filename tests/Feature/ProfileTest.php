@@ -14,7 +14,6 @@ class ProfileTest extends TestCase
     public function test_profile_page_is_displayed(): void
     {
         $user = User::factory()->create([
-            'name' => 'Demo Player',
             'username' => 'demo',
         ]);
 
@@ -23,7 +22,6 @@ class ProfileTest extends TestCase
             ->assertOk()
             ->assertInertia(fn ($page) => $page
                 ->component('user/profile')
-                ->where('profile.name', 'Demo Player')
                 ->where('profile.username', 'demo')
                 ->where('profile.can_update_password', true)
                 ->where('stats.total_games', 0));
@@ -90,13 +88,11 @@ class ProfileTest extends TestCase
     public function test_user_can_update_profile_details(): void
     {
         $user = User::factory()->create([
-            'name' => 'Old Name',
             'username' => 'oldname',
         ]);
 
         $this->actingAs($user)
             ->put(route('user.profile.update'), [
-                'name' => 'New Name',
                 'username' => 'newname',
             ])
             ->assertRedirect(route('user.profile'))
@@ -104,7 +100,6 @@ class ProfileTest extends TestCase
 
         $user->refresh();
 
-        $this->assertSame('New Name', $user->name);
         $this->assertSame('newname', $user->username);
     }
 
@@ -116,7 +111,6 @@ class ProfileTest extends TestCase
 
         $this->actingAs($user)
             ->put(route('user.profile.update'), [
-                'name' => $user->name,
                 'username' => $user->username,
                 'current_password' => 'password',
                 'password' => 'new-password-1',
@@ -138,7 +132,6 @@ class ProfileTest extends TestCase
 
         $this->actingAs($user)
             ->put(route('user.profile.update'), [
-                'name' => $user->name,
                 'username' => $user->username,
                 'current_password' => 'wrong-password',
                 'password' => 'new-password-1',
@@ -154,7 +147,6 @@ class ProfileTest extends TestCase
 
         $this->actingAs($user)
             ->put(route('user.profile.update'), [
-                'name' => $user->name,
                 'username' => 'taken',
             ])
             ->assertSessionHasErrors('username');

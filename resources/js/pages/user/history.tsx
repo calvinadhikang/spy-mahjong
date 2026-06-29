@@ -66,7 +66,7 @@ export default function History({ sessions }: HistoryProps) {
                                                     ? ''
                                                     : 's'}{' '}
                                                 · Master{' '}
-                                                {session.room_master_name}
+                                                {session.room_master_username}
                                             </p>
                                         </div>
                                         {session.viewer_total_money !==

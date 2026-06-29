@@ -44,7 +44,6 @@ class DatabaseSeeder extends Seeder
         ]);
 
         User::factory()->create([
-            'name' => 'Demo Player',
             'username' => 'demo',
         ]);
     }

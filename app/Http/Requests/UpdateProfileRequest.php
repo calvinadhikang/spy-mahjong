@@ -29,7 +29,6 @@ class UpdateProfileRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:255'],
             'username' => [
                 'required',
                 'string',
@@ -49,7 +48,6 @@ class UpdateProfileRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'name.required' => 'Please enter your name.',
             'username.required' => 'Please choose a username.',
             'username.regex' => 'Username may only contain lowercase letters, numbers, and underscores.',
             'username.unique' => 'That username is already taken.',

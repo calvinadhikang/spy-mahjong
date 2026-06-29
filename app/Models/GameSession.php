@@ -113,6 +113,29 @@ class GameSession extends Model
             && $this->hasPlayer($viewer);
     }
 
+    public function canJoin(?User $viewer): bool
+    {
+        return $viewer
+            && $this->status === GameSessionStatus::Waiting
+            && ! $this->hasPlayer($viewer);
+    }
+
+    public function canLeave(?User $viewer): bool
+    {
+        return $viewer
+            && $this->status === GameSessionStatus::Waiting
+            && $this->hasPlayer($viewer);
+    }
+
+    public function canRemovePlayer(?User $viewer, User $player): bool
+    {
+        return $viewer
+            && $this->isRoomMaster($viewer)
+            && $this->status === GameSessionStatus::Waiting
+            && $this->hasPlayer($player)
+            && $player->id !== $viewer->id;
+    }
+
     /**
      * @return array<string, mixed>
      */
@@ -134,12 +157,13 @@ class GameSession extends Model
             'can_add_players' => $this->canAddPlayers($viewer),
             'can_submit_money' => $this->canSubmitMoney($viewer),
             'can_complete' => $this->canComplete($viewer),
+            'can_join' => $this->canJoin($viewer),
+            'can_leave' => $this->canLeave($viewer),
             'all_money_submitted' => $this->allPlayersSubmittedMoney(),
             'max_players' => self::MAX_PLAYERS,
-            'viewer_player_id' => $viewer?->id,
+            'viewer_player_id' => $viewer && $this->hasPlayer($viewer) ? $viewer->id : null,
             'room_master' => [
                 'id' => $this->roomMaster->id,
-                'name' => $this->roomMaster->name,
                 'username' => $this->roomMaster->username,
                 'is_room_master' => true,
                 'total_money' => $roomMasterPlayer && $roomMasterPlayer->pivot->total_money !== null
@@ -149,9 +173,9 @@ class GameSession extends Model
             ],
             'players' => $this->players->map(fn (User $player) => [
                 'id' => $player->id,
-                'name' => $player->name,
                 'username' => $player->username,
                 'is_room_master' => $player->id === $this->room_master_id,
+                'can_remove' => $this->canRemovePlayer($viewer, $player),
                 'total_money' => $player->pivot->total_money !== null
                     ? (float) $player->pivot->total_money
                     : null,
@@ -190,7 +214,7 @@ class GameSession extends Model
             'completed_at' => $this->completed_at?->toIso8601String(),
             'player_count' => $this->players->count(),
             'is_room_master' => $viewer ? $this->isRoomMaster($viewer) : false,
-            'room_master_name' => $this->roomMaster->name,
+            'room_master_username' => $this->roomMaster->username,
             'viewer_total_money' => $viewerPlayer && $viewerPlayer->pivot->total_money !== null
                 ? (float) $viewerPlayer->pivot->total_money
                 : null,

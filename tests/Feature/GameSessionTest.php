@@ -33,9 +33,9 @@ class GameSessionTest extends TestCase
             ->where('activeSession.status', GameSessionStatus::Waiting->value));
     }
 
-    public function test_user_can_create_game_session_without_players(): void
+    public function test_admin_can_create_game_session_without_auto_joining(): void
     {
-        $master = User::factory()->create(['username' => 'master']);
+        $master = User::factory()->admin()->create(['username' => 'master']);
 
         $response = $this->actingAs($master)->post(route('game-sessions.store'), [
             'name' => 'Spy Night',
@@ -47,9 +47,101 @@ class GameSessionTest extends TestCase
         $this->assertSame('Spy Night', $session->name);
         $this->assertSame($master->id, $session->room_master_id);
         $this->assertSame(GameSessionStatus::Waiting, $session->status);
-        $this->assertSame([$master->id], $session->players()->pluck('users.id')->all());
+        $this->assertSame([], $session->players()->pluck('users.id')->all());
 
         $response->assertRedirect(route('game-sessions.show', $session));
+    }
+
+    public function test_non_admin_cannot_create_game_session(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)
+            ->get(route('game-sessions.create'))
+            ->assertForbidden();
+
+        $this->actingAs($user)
+            ->post(route('game-sessions.store'), ['name' => 'Spy Night'])
+            ->assertForbidden();
+
+        $this->assertDatabaseCount('game_sessions', 0);
+    }
+
+    public function test_room_master_sees_join_button_before_joining(): void
+    {
+        $master = User::factory()->admin()->create();
+        $session = GameSession::factory()->create([
+            'room_master_id' => $master->id,
+        ]);
+
+        $this->actingAs($master)
+            ->get(route('game-sessions.show', $session))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->where('session.is_room_master', true)
+                ->where('session.can_join', true)
+                ->where('session.viewer_player_id', null));
+    }
+
+    public function test_room_master_can_join_their_own_session(): void
+    {
+        $master = User::factory()->admin()->create();
+        $session = GameSession::factory()->create([
+            'room_master_id' => $master->id,
+        ]);
+
+        $this->actingAs($master)
+            ->post(route('game-sessions.join', $session))
+            ->assertRedirect(route('game-sessions.show', $session));
+
+        $this->assertTrue($session->fresh()->hasPlayer($master));
+    }
+
+    public function test_room_master_can_delete_waiting_session(): void
+    {
+        $master = User::factory()->admin()->create();
+        $session = GameSession::factory()->create([
+            'room_master_id' => $master->id,
+        ]);
+
+        $this->actingAs($master)
+            ->delete(route('game-sessions.destroy', $session))
+            ->assertRedirect(route('user.dashboard'));
+
+        $this->assertDatabaseMissing('game_sessions', [
+            'id' => $session->id,
+        ]);
+    }
+
+    public function test_room_master_cannot_delete_started_session(): void
+    {
+        $master = User::factory()->admin()->create();
+        $session = GameSession::factory()->inProgress()->create([
+            'room_master_id' => $master->id,
+        ]);
+        $session->players()->sync([$master->id]);
+
+        $this->actingAs($master)
+            ->delete(route('game-sessions.destroy', $session))
+            ->assertSessionHasErrors('session');
+
+        $this->assertDatabaseHas('game_sessions', [
+            'id' => $session->id,
+        ]);
+    }
+
+    public function test_non_room_master_cannot_delete_session(): void
+    {
+        $master = User::factory()->admin()->create();
+        $guest = User::factory()->create();
+        $session = GameSession::factory()->create([
+            'room_master_id' => $master->id,
+        ]);
+        $session->players()->sync([$guest->id]);
+
+        $this->actingAs($guest)
+            ->delete(route('game-sessions.destroy', $session))
+            ->assertForbidden();
     }
 
     public function test_room_master_can_add_players_before_game_starts(): void
@@ -228,10 +320,89 @@ class GameSessionTest extends TestCase
             ->assertForbidden();
     }
 
-    public function test_users_can_be_searched_by_name_or_username(): void
+    public function test_player_can_leave_waiting_session(): void
+    {
+        $master = User::factory()->admin()->create();
+        $guest = User::factory()->create();
+        $session = GameSession::factory()->create([
+            'room_master_id' => $master->id,
+        ]);
+        $session->players()->sync([$master->id, $guest->id]);
+
+        $this->actingAs($guest)
+            ->post(route('game-sessions.leave', $session))
+            ->assertRedirect(route('user.dashboard'));
+
+        $this->assertFalse($session->fresh()->hasPlayer($guest));
+    }
+
+    public function test_room_master_can_leave_and_rejoin_waiting_session(): void
+    {
+        $master = User::factory()->admin()->create();
+        $session = GameSession::factory()->create([
+            'room_master_id' => $master->id,
+        ]);
+        $session->players()->sync([$master->id]);
+
+        $this->actingAs($master)
+            ->post(route('game-sessions.leave', $session))
+            ->assertRedirect(route('game-sessions.show', $session));
+
+        $this->assertFalse($session->fresh()->hasPlayer($master));
+
+        $this->actingAs($master)
+            ->get(route('game-sessions.show', $session))
+            ->assertInertia(fn ($page) => $page->where('session.can_join', true));
+    }
+
+    public function test_room_master_can_remove_player_before_game_starts(): void
+    {
+        $master = User::factory()->create();
+        $guest = User::factory()->create();
+        $session = GameSession::factory()->create([
+            'room_master_id' => $master->id,
+        ]);
+        $session->players()->sync([$master->id, $guest->id]);
+
+        $this->actingAs($master)
+            ->delete(route('game-sessions.players.destroy', [$session, $guest]))
+            ->assertRedirect(route('game-sessions.show', $session));
+
+        $this->assertFalse($session->fresh()->hasPlayer($guest));
+    }
+
+    public function test_non_room_master_cannot_remove_players(): void
+    {
+        $master = User::factory()->create();
+        $guest = User::factory()->create();
+        $other = User::factory()->create();
+        $session = GameSession::factory()->create([
+            'room_master_id' => $master->id,
+        ]);
+        $session->players()->sync([$master->id, $guest->id, $other->id]);
+
+        $this->actingAs($guest)
+            ->delete(route('game-sessions.players.destroy', [$session, $other]))
+            ->assertForbidden();
+    }
+
+    public function test_players_cannot_leave_after_game_starts(): void
+    {
+        $master = User::factory()->create();
+        $guest = User::factory()->create();
+        $session = GameSession::factory()->inProgress()->create([
+            'room_master_id' => $master->id,
+        ]);
+        $session->players()->sync([$master->id, $guest->id]);
+
+        $this->actingAs($guest)
+            ->post(route('game-sessions.leave', $session))
+            ->assertForbidden();
+    }
+
+    public function test_users_can_be_searched_by_username(): void
     {
         User::factory()->create([
-            'name' => 'Alice Wong',
             'username' => 'alice',
         ]);
 

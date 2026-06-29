@@ -83,7 +83,7 @@ export function PlayerSearch({
                     value={query}
                     disabled={disabled || isFull}
                     onChange={(event) => setQuery(event.target.value)}
-                    placeholder="Search by name or username"
+                    placeholder="Search by username"
                     className="min-h-12 w-full rounded-xl border border-white/10 bg-white/5 px-4 text-base text-white placeholder:text-white/35 outline-none transition focus:border-emerald-400/60 focus:ring-2 focus:ring-emerald-400/20 disabled:cursor-not-allowed disabled:opacity-50"
                 />
                 <p className="text-xs text-emerald-100/50">
@@ -113,10 +113,7 @@ export function PlayerSearch({
                             >
                                 <span>
                                     <span className="block font-medium text-white">
-                                        {user.name}
-                                    </span>
-                                    <span className="block text-sm text-emerald-100/60">
-                                        @{user.username}
+                                        {user.username}
                                     </span>
                                 </span>
                                 <span className="text-sm font-medium text-emerald-300">

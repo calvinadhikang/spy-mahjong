@@ -23,7 +23,6 @@ class RegisterController extends Controller
     {
         $user = DB::transaction(function () use ($request): User {
             $user = User::query()->create([
-                'name' => $request->string('name')->value(),
                 'username' => $request->string('username')->value(),
             ]);
 

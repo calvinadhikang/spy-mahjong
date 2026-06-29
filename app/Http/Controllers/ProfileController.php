@@ -17,7 +17,6 @@ class ProfileController extends Controller
 
         return Inertia::render('user/profile', [
             'profile' => [
-                'name' => $user?->name,
                 'username' => $user?->username,
                 'can_update_password' => $user?->identities()
                     ->where('provider', IdentityProvider::Password)
@@ -33,7 +32,6 @@ class ProfileController extends Controller
         $user = $request->user();
 
         $user->update([
-            'name' => $request->string('name')->value(),
             'username' => $request->string('username')->value(),
         ]);
 

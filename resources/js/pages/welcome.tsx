@@ -30,7 +30,7 @@ export default function Welcome() {
                             <p className="mt-8 text-sm text-emerald-100/70">
                                 Welcome back,{' '}
                                 <span className="font-semibold text-white">
-                                    {auth.user.name}
+                                    {auth.user.username}
                                 </span>
                             </p>
                         ) : null}

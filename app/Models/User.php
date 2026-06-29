@@ -17,7 +17,6 @@ use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
- * @property string $name
  * @property string $username
  * @property bool $is_admin
  * @property int $total_xp
@@ -25,7 +24,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['name', 'username', 'is_admin', 'total_xp'])]
+#[Fillable(['username', 'is_admin', 'total_xp'])]
 #[Hidden(['remember_token'])]
 class User extends Authenticatable
 {
@@ -99,13 +98,18 @@ class User extends Authenticatable
 
     public function activeGameSession(): ?GameSession
     {
-        return $this->gameSessions()
+        return GameSession::query()
             ->whereIn('status', [
                 GameSessionStatus::Waiting,
                 GameSessionStatus::InProgress,
                 GameSessionStatus::Finishing,
             ])
-            ->latest('game_sessions.updated_at')
+            ->where(function ($query): void {
+                $query
+                    ->where('room_master_id', $this->id)
+                    ->orWhereHas('players', fn ($players) => $players->whereKey($this->id));
+            })
+            ->latest('updated_at')
             ->first();
     }
 
