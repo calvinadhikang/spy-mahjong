@@ -13,7 +13,7 @@ class ActiveSessionBlockTest extends TestCase
 
     public function test_create_page_shows_block_when_user_has_active_session(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->admin()->create();
         $session = GameSession::factory()->inProgress()->create([
             'room_master_id' => $user->id,
         ]);
@@ -30,7 +30,7 @@ class ActiveSessionBlockTest extends TestCase
 
     public function test_store_redirects_with_block_flash_when_user_has_active_session(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->admin()->create();
         $session = GameSession::factory()->inProgress()->create([
             'room_master_id' => $user->id,
         ]);
@@ -90,6 +90,23 @@ class ActiveSessionBlockTest extends TestCase
             ->assertSessionHas('active_session_block', true);
 
         $this->assertFalse($other->fresh()->hasPlayer($user));
+    }
+
+    public function test_room_master_with_unjoined_waiting_session_is_blocked_from_creating_another(): void
+    {
+        $user = User::factory()->admin()->create();
+        GameSession::factory()->create([
+            'room_master_id' => $user->id,
+        ]);
+
+        $this->actingAs($user)
+            ->post(route('game-sessions.store'), ['name' => 'Another Game'])
+            ->assertRedirect(route('game-sessions.create'))
+            ->assertSessionHas('active_session_block', true);
+
+        $this->assertDatabaseMissing('game_sessions', [
+            'name' => 'Another Game',
+        ]);
     }
 
     public function test_room_master_cannot_add_player_with_active_session_elsewhere(): void

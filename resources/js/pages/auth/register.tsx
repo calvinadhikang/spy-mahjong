@@ -7,7 +7,6 @@ import { Input } from '@/components/ui/input';
 
 export default function Register() {
     const { data, setData, post, processing, errors } = useForm({
-        name: '',
         username: '',
         password: '',
         password_confirmation: '',
@@ -29,17 +28,6 @@ export default function Register() {
                     onSubmit={submit}
                     className="flex flex-1 flex-col gap-5"
                 >
-                    <Input
-                        name="name"
-                        label="Name"
-                        autoComplete="name"
-                        value={data.name}
-                        onChange={(event) =>
-                            setData('name', event.target.value)
-                        }
-                        error={errors.name}
-                    />
-
                     <Input
                         name="username"
                         label="Username"

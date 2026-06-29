@@ -23,14 +23,10 @@ class UserSearchController extends Controller
                 $request->user(),
                 fn ($builder) => $builder->whereKeyNot($request->user()->id),
             )
-            ->where(function ($builder) use ($query): void {
-                $builder
-                    ->where('name', 'like', "%{$query}%")
-                    ->orWhere('username', 'like', '%'.strtolower($query).'%');
-            })
-            ->orderBy('name')
+            ->where('username', 'like', '%'.strtolower($query).'%')
+            ->orderBy('username')
             ->limit(10)
-            ->get(['id', 'name', 'username']);
+            ->get(['id', 'username']);
 
         return response()->json([
             'users' => $users,

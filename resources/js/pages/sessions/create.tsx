@@ -50,9 +50,8 @@ export default function CreateSession({
                     />
 
                     <p className="rounded-xl border border-white/10 bg-white/5 p-4 text-sm text-emerald-100/70">
-                        You will be the room master. After creating the
-                        session, you can search and add players before
-                        starting the game.
+                        You will be the room master. Join the session, then
+                        invite up to 3 players before starting the game.
                     </p>
 
                     <div className="mt-auto flex flex-col gap-3 pt-6">

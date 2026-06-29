@@ -31,6 +31,11 @@ class GameSessionFactory extends Factory
 
     public function configure(): static
     {
+        return $this;
+    }
+
+    public function withRoomMasterJoined(): static
+    {
         return $this->afterCreating(function (GameSession $session): void {
             $session->players()->syncWithoutDetaching([$session->room_master_id]);
         });

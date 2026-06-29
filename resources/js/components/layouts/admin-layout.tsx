@@ -1,6 +1,7 @@
-import { Link, usePage } from '@inertiajs/react';
+import { Link, useForm, usePage } from '@inertiajs/react';
 import type { ReactNode } from 'react';
 
+import { Button } from '@/components/ui/button';
 import type { SharedData } from '@/types';
 
 type AdminLayoutProps = {
@@ -10,12 +11,14 @@ type AdminLayoutProps = {
 };
 
 const adminLinks = [
+    { href: '/admin/users', label: 'Users' },
     { href: '/admin/xp-settings', label: 'XP settings' },
     { href: '/admin/levels', label: 'Levels' },
 ];
 
 export function AdminLayout({ children, title, subtitle }: AdminLayoutProps) {
     const { url } = usePage<SharedData>();
+    const { post, processing } = useForm({});
 
     return (
         <div className="min-h-dvh bg-gradient-to-b from-emerald-950 via-emerald-900 to-emerald-950 text-white">
@@ -26,7 +29,7 @@ export function AdminLayout({ children, title, subtitle }: AdminLayoutProps) {
                             Admin
                         </p>
                         <Link
-                            href="/user/profile"
+                            href="/user"
                             className="text-sm text-emerald-200/70 hover:text-emerald-100"
                         >
                             Back to app
@@ -38,7 +41,7 @@ export function AdminLayout({ children, title, subtitle }: AdminLayoutProps) {
                             {subtitle}
                         </p>
                     ) : null}
-                    <nav className="mt-6 flex gap-2">
+                    <nav className="mt-6 flex flex-wrap gap-2">
                         {adminLinks.map((link) => {
                             const isActive = url.startsWith(link.href);
 
@@ -57,6 +60,15 @@ export function AdminLayout({ children, title, subtitle }: AdminLayoutProps) {
                             );
                         })}
                     </nav>
+                    <div className="mt-4">
+                        <Button
+                            variant="ghost"
+                            disabled={processing}
+                            onClick={() => post('/admin/logout')}
+                        >
+                            Sign out
+                        </Button>
+                    </div>
                 </header>
                 <main className="flex flex-1 flex-col py-8">{children}</main>
             </div>

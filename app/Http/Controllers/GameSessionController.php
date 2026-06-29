@@ -21,7 +21,12 @@ class GameSessionController extends Controller
     public function create(Request $request): Response
     {
         $user = Auth::user();
-        $hasActiveSession = $user?->activeGameSession() !== null;
+
+        if (! $user?->is_admin) {
+            abort(403);
+        }
+
+        $hasActiveSession = $user->activeGameSession() !== null;
 
         return Inertia::render('sessions/create', [
             'showActiveSessionBlock' => $hasActiveSession,
@@ -38,6 +43,10 @@ class GameSessionController extends Controller
             ]);
         }
 
+        if (! $user->is_admin) {
+            abort(403);
+        }
+
         if ($user->activeGameSession()) {
             return redirect()
                 ->route('game-sessions.create')
@@ -51,12 +60,29 @@ class GameSessionController extends Controller
                 'status' => GameSessionStatus::Waiting,
             ]);
 
-            $session->players()->sync([$user->id]);
-
             return $session;
         });
 
         return redirect()->route('game-sessions.show', $session);
+    }
+
+    public function destroy(GameSession $gameSession): RedirectResponse
+    {
+        $user = Auth::user();
+
+        if (! $user || ! $gameSession->isRoomMaster($user)) {
+            abort(403);
+        }
+
+        if ($gameSession->status !== GameSessionStatus::Waiting) {
+            return back()->withErrors([
+                'session' => 'Only waiting sessions can be deleted.',
+            ]);
+        }
+
+        $gameSession->delete();
+
+        return redirect()->route('user.dashboard');
     }
 
     public function show(GameSession $gameSession): Response
@@ -104,7 +130,7 @@ class GameSessionController extends Controller
 
         if ($playerActiveSession && $playerActiveSession->id !== $gameSession->id) {
             return back()->withErrors([
-                'user_id' => "{$player->name} must finish their current game before joining another room.",
+                'user_id' => "{$player->username} must finish their current game before joining another room.",
             ]);
         }
 
@@ -243,13 +269,43 @@ class GameSessionController extends Controller
 
         $activeSession = $user->activeGameSession();
 
-        if ($activeSession) {
+        if ($activeSession && $activeSession->id !== $gameSession->id) {
             return redirect()
                 ->route('user.dashboard')
                 ->with('active_session_block', true);
         }
 
         $gameSession->players()->attach($user->id);
+
+        return redirect()->route('game-sessions.show', $gameSession);
+    }
+
+    public function leave(GameSession $gameSession): RedirectResponse
+    {
+        $user = Auth::user();
+
+        if (! $user || ! $gameSession->canLeave($user)) {
+            abort(403);
+        }
+
+        $gameSession->players()->detach($user->id);
+
+        if ($gameSession->isRoomMaster($user)) {
+            return redirect()->route('game-sessions.show', $gameSession);
+        }
+
+        return redirect()->route('user.dashboard');
+    }
+
+    public function removePlayer(GameSession $gameSession, User $user): RedirectResponse
+    {
+        $viewer = Auth::user();
+
+        if (! $viewer || ! $gameSession->canRemovePlayer($viewer, $user)) {
+            abort(403);
+        }
+
+        $gameSession->players()->detach($user->id);
 
         return redirect()->route('game-sessions.show', $gameSession);
     }

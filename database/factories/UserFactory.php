@@ -20,7 +20,6 @@ class UserFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => fake()->name(),
             'username' => strtolower(fake()->unique()->userName()),
             'is_admin' => false,
             'total_xp' => 0,

@@ -12,31 +12,33 @@ class AdminTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_non_admin_cannot_access_admin_routes(): void
+    public function test_guest_cannot_access_admin_management_routes(): void
+    {
+        $this->get(route('admin.xp-settings.edit'))
+            ->assertRedirect(route('admin.login'));
+
+        $this->get(route('admin.levels.index'))
+            ->assertRedirect(route('admin.login'));
+    }
+
+    public function test_logged_in_user_without_console_session_cannot_access_admin_management_routes(): void
     {
         $user = User::factory()->create();
 
         $this->actingAs($user)
             ->get(route('admin.xp-settings.edit'))
-            ->assertForbidden();
+            ->assertRedirect(route('admin.login'));
 
         $this->actingAs($user)
             ->get(route('admin.levels.index'))
-            ->assertForbidden();
+            ->assertRedirect(route('admin.login'));
     }
 
-    public function test_guest_cannot_access_admin_routes(): void
+    public function test_console_can_view_and_update_xp_settings(): void
     {
-        $this->get(route('admin.xp-settings.edit'))
-            ->assertRedirect(route('login'));
-    }
-
-    public function test_admin_can_view_and_update_xp_settings(): void
-    {
-        $admin = User::factory()->admin()->create();
         XpRewardSetting::current();
 
-        $this->actingAs($admin)
+        $this->withSession(['admin_console_authenticated' => true])
             ->get(route('admin.xp-settings.edit'))
             ->assertOk()
             ->assertInertia(fn ($page) => $page
@@ -44,7 +46,7 @@ class AdminTest extends TestCase
                 ->where('settings.first_place_xp', 100)
                 ->where('settings.loss_xp', 0));
 
-        $this->actingAs($admin)
+        $this->withSession(['admin_console_authenticated' => true])
             ->put(route('admin.xp-settings.update'), [
                 'first_place_xp' => 200,
                 'second_place_xp' => 120,
@@ -61,18 +63,16 @@ class AdminTest extends TestCase
         $this->assertSame(-15, $settings->loss_xp);
     }
 
-    public function test_admin_can_manage_levels(): void
+    public function test_console_can_manage_levels(): void
     {
-        $admin = User::factory()->admin()->create();
-
-        $this->actingAs($admin)
+        $this->withSession(['admin_console_authenticated' => true])
             ->get(route('admin.levels.index'))
             ->assertOk()
             ->assertInertia(fn ($page) => $page
                 ->component('admin/levels')
                 ->has('levels', 0));
 
-        $this->actingAs($admin)
+        $this->withSession(['admin_console_authenticated' => true])
             ->post(route('admin.levels.store'), [
                 'name' => 'Beginner',
                 'min_xp' => 0,
@@ -84,7 +84,7 @@ class AdminTest extends TestCase
         $this->assertNotNull($level);
         $this->assertSame('Beginner', $level->name);
 
-        $this->actingAs($admin)
+        $this->withSession(['admin_console_authenticated' => true])
             ->put(route('admin.levels.update', $level), [
                 'name' => 'Novice',
                 'min_xp' => 10,
@@ -93,7 +93,7 @@ class AdminTest extends TestCase
 
         $this->assertSame('Novice', $level->fresh()->name);
 
-        $this->actingAs($admin)
+        $this->withSession(['admin_console_authenticated' => true])
             ->delete(route('admin.levels.destroy', $level))
             ->assertRedirect(route('admin.levels.index'));
 

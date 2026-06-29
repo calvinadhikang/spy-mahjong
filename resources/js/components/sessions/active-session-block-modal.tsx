@@ -23,7 +23,7 @@ export function ActiveSessionBlockModal({
             <button
                 type="button"
                 aria-label="Close dialog"
-                className="absolute inset-0 bg-emerald-950/80 backdrop-blur-sm"
+                className="absolute inset-0 animate-modal-backdrop-in bg-emerald-950/80 backdrop-blur-sm"
                 onClick={onClose}
             />
 
@@ -31,7 +31,7 @@ export function ActiveSessionBlockModal({
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="active-session-block-title"
-                className="relative w-full max-w-md rounded-2xl border border-white/10 bg-emerald-900 p-6 shadow-2xl shadow-emerald-950/50"
+                className="relative w-full max-w-md animate-modal-panel-in rounded-2xl border border-white/10 bg-emerald-900 p-6 shadow-2xl shadow-emerald-950/50"
             >
                 <div className="mb-4 flex size-12 items-center justify-center rounded-xl border border-amber-300/20 bg-amber-400/10 text-2xl">
                     🀄

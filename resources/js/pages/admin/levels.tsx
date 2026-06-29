@@ -4,6 +4,7 @@ import { useState } from 'react';
 
 import { AdminLayout } from '@/components/layouts/admin-layout';
 import { Button } from '@/components/ui/button';
+import { ConfirmModal } from '@/components/ui/confirm-modal';
 import { Input } from '@/components/ui/input';
 import type { Level } from '@/types';
 
@@ -17,6 +18,7 @@ export default function AdminLevels({ levels }: LevelsProps) {
     }>().props;
 
     const [editingId, setEditingId] = useState<number | null>(null);
+    const [levelToDelete, setLevelToDelete] = useState<Level | null>(null);
 
     const createForm = useForm({
         name: '',
@@ -35,6 +37,35 @@ export default function AdminLevels({ levels }: LevelsProps) {
     return (
         <>
             <Head title="Admin · Levels" />
+            <ConfirmModal
+                open={levelToDelete !== null}
+                title="Delete level?"
+                description={
+                    levelToDelete ? (
+                        <>
+                            Delete level{' '}
+                            <span className="font-semibold text-white">
+                                {levelToDelete.name}
+                            </span>
+                            ? This cannot be undone.
+                        </>
+                    ) : (
+                        ''
+                    )
+                }
+                confirmLabel="Delete level"
+                destructive
+                onConfirm={() => {
+                    if (!levelToDelete) {
+                        return;
+                    }
+
+                    router.delete(`/admin/levels/${levelToDelete.id}`, {
+                        onFinish: () => setLevelToDelete(null),
+                    });
+                }}
+                onClose={() => setLevelToDelete(null)}
+            />
             <AdminLayout
                 title="Levels"
                 subtitle="Define level names and the minimum XP required to reach each."
@@ -129,17 +160,9 @@ export default function AdminLevels({ levels }: LevelsProps) {
                                                 </button>
                                                 <button
                                                     type="button"
-                                                    onClick={() => {
-                                                        if (
-                                                            confirm(
-                                                                `Delete level "${level.name}"?`,
-                                                            )
-                                                        ) {
-                                                            router.delete(
-                                                                `/admin/levels/${level.id}`,
-                                                            );
-                                                        }
-                                                    }}
+                                                    onClick={() =>
+                                                        setLevelToDelete(level)
+                                                    }
                                                     className="text-sm font-medium text-red-300 hover:text-red-200"
                                                 >
                                                     Delete

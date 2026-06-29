@@ -2,7 +2,6 @@ import type { ActiveSessionSummary } from './game-session';
 
 export type User = {
     id: number;
-    name: string;
     username: string;
     is_admin: boolean;
     total_xp: number;
@@ -18,4 +17,5 @@ export type SharedData = {
     name: string;
     auth: Auth;
     activeSession: ActiveSessionSummary | null;
+    adminConsoleAuthenticated: boolean;
 };

@@ -1,8 +1,8 @@
 export type GameSessionPlayer = {
     id: number;
-    name: string;
     username: string;
     is_room_master: boolean;
+    can_remove: boolean;
     total_money: number | null;
     has_submitted_money: boolean;
 };
@@ -19,6 +19,8 @@ export type GameSession = {
     can_add_players: boolean;
     can_submit_money: boolean;
     can_complete: boolean;
+    can_join: boolean;
+    can_leave: boolean;
     all_money_submitted: boolean;
     max_players: number;
     viewer_player_id: number | null;
@@ -32,7 +34,7 @@ export type PastGameSession = {
     completed_at: string | null;
     player_count: number;
     is_room_master: boolean;
-    room_master_name: string;
+    room_master_username: string;
     viewer_total_money: number | null;
 };
 export type ActiveSessionSummary = {
@@ -44,6 +46,5 @@ export type ActiveSessionSummary = {
 
 export type SearchUser = {
     id: number;
-    name: string;
     username: string;
 };

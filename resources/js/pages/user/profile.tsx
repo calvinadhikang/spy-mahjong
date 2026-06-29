@@ -8,7 +8,6 @@ import { Input } from '@/components/ui/input';
 import type { GameStats, SharedData, UserProgression } from '@/types';
 
 type ProfileData = {
-    name: string | null | undefined;
     username: string | null | undefined;
     can_update_password: boolean;
 };
@@ -26,7 +25,6 @@ export default function Profile({ profile, stats, progression }: ProfileProps) {
 
     const { data, setData, put, processing, errors, recentlySuccessful } =
         useForm({
-            name: profile.name ?? '',
             username: profile.username ?? '',
             current_password: '',
             password: '',
@@ -76,15 +74,6 @@ export default function Profile({ profile, stats, progression }: ProfileProps) {
                         ) : null}
                         {stats ? <ProfileStats stats={stats} /> : null}
 
-                        {auth.user?.is_admin ? (
-                            <Link
-                                href="/admin/xp-settings"
-                                className="inline-flex min-h-11 items-center justify-center rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 text-sm font-medium text-amber-200 transition hover:bg-amber-400/20"
-                            >
-                                Admin settings
-                            </Link>
-                        ) : null}
-
                         <form onSubmit={submit} className="flex flex-col gap-5">
                             {(recentlySuccessful ||
                                 flash?.profile_updated) && (
@@ -98,17 +87,6 @@ export default function Profile({ profile, stats, progression }: ProfileProps) {
                                     Account
                                 </h2>
                             </div>
-
-                            <Input
-                                name="name"
-                                label="Name"
-                                autoComplete="name"
-                                value={data.name}
-                                onChange={(event) =>
-                                    setData('name', event.target.value)
-                                }
-                                error={errors.name}
-                            />
 
                             <Input
                                 name="username"

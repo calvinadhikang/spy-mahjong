@@ -44,6 +44,7 @@ class HandleInertiaRequests extends Middleware
             'activeSession' => fn () => $request->user()
                 ?->activeGameSession()
                 ?->toActiveSummary(),
+            'adminConsoleAuthenticated' => fn () => (bool) $request->session()->get('admin_console_authenticated'),
         ];
     }
 }

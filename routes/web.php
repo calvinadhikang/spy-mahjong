@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminLevelController;
+use App\Http\Controllers\Admin\AdminLoginController;
+use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\AdminXpSettingsController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
@@ -31,29 +33,39 @@ Route::get('/sessions/create', [GameSessionController::class, 'create'])->name('
 Route::post('/sessions', [GameSessionController::class, 'store'])->name('game-sessions.store');
 Route::get('/sessions/{gameSession}', [GameSessionController::class, 'show'])->name('game-sessions.show');
 Route::post('/sessions/{gameSession}/join', [GameSessionController::class, 'join'])->name('game-sessions.join');
+Route::post('/sessions/{gameSession}/leave', [GameSessionController::class, 'leave'])->name('game-sessions.leave');
 Route::post('/sessions/{gameSession}/players', [GameSessionController::class, 'addPlayer'])->name('game-sessions.players.store');
+Route::delete('/sessions/{gameSession}/players/{user}', [GameSessionController::class, 'removePlayer'])->name('game-sessions.players.destroy');
 Route::post('/sessions/{gameSession}/start', [GameSessionController::class, 'start'])->name('game-sessions.start');
 Route::post('/sessions/{gameSession}/finish', [GameSessionController::class, 'finish'])->name('game-sessions.finish');
 Route::post('/sessions/{gameSession}/money', [GameSessionController::class, 'submitMoney'])->name('game-sessions.money.store');
 Route::post('/sessions/{gameSession}/complete', [GameSessionController::class, 'complete'])->name('game-sessions.complete');
+Route::delete('/sessions/{gameSession}', [GameSessionController::class, 'destroy'])->name('game-sessions.destroy');
 
 Route::prefix('admin')
-    ->middleware(['auth', 'admin'])
     ->name('admin.')
     ->group(function () {
-        Route::redirect('/', '/admin/xp-settings')->name('home');
+        Route::get('/login', [AdminLoginController::class, 'create'])->name('login');
+        Route::post('/login', [AdminLoginController::class, 'store']);
 
-        Route::get('/xp-settings', [AdminXpSettingsController::class, 'edit'])
-            ->name('xp-settings.edit');
-        Route::put('/xp-settings', [AdminXpSettingsController::class, 'update'])
-            ->name('xp-settings.update');
+        Route::middleware('admin.console')->group(function () {
+            Route::redirect('/', '/admin/users')->name('home');
+            Route::post('/logout', [AdminLoginController::class, 'destroy'])->name('logout');
+            Route::get('/users', [AdminUserController::class, 'index'])->name('users.index');
+            Route::put('/users/{user}', [AdminUserController::class, 'update'])->name('users.update');
 
-        Route::get('/levels', [AdminLevelController::class, 'index'])
-            ->name('levels.index');
-        Route::post('/levels', [AdminLevelController::class, 'store'])
-            ->name('levels.store');
-        Route::put('/levels/{level}', [AdminLevelController::class, 'update'])
-            ->name('levels.update');
-        Route::delete('/levels/{level}', [AdminLevelController::class, 'destroy'])
-            ->name('levels.destroy');
+            Route::get('/xp-settings', [AdminXpSettingsController::class, 'edit'])
+                ->name('xp-settings.edit');
+            Route::put('/xp-settings', [AdminXpSettingsController::class, 'update'])
+                ->name('xp-settings.update');
+
+            Route::get('/levels', [AdminLevelController::class, 'index'])
+                ->name('levels.index');
+            Route::post('/levels', [AdminLevelController::class, 'store'])
+                ->name('levels.store');
+            Route::put('/levels/{level}', [AdminLevelController::class, 'update'])
+                ->name('levels.update');
+            Route::delete('/levels/{level}', [AdminLevelController::class, 'destroy'])
+                ->name('levels.destroy');
+        });
     });
